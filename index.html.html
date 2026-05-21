@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEVAZ English Placement Test – Adult Program</title>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --cevaz-blue: #004a99;
+            --cevaz-gold: #f4b400;
+            --bg-light: #f4f7f9;
+            --text-main: #2d3748;
+            --shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .main-card {
+            background: white;
+            width: 100%;
+            max-width: 650px;
+            padding-bottom: 40px;
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .cintillo {
+            height: 20px;
+            width: 100%;
+            background: linear-gradient(90deg, var(--cevaz-blue) 0%, var(--cevaz-blue) 70%, var(--cevaz-gold) 70%, var(--cevaz-gold) 100%);
+            margin-bottom: 30px;
+        }
+
+        .card-content { padding: 0 40px; }
+
+        .main-title {
+            color: var(--cevaz-blue);
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+        }
+
+        .progress-stepper {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        .progress-stepper::before {
+            content: "";
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #e2e8f0;
+            z-index: 1;
+        }
+        .step-dot {
+            width: 32px;
+            height: 32px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: bold;
+            z-index: 2;
+        }
+        .step-dot.active { background: var(--cevaz-gold); border-color: var(--cevaz-gold); color: white; transform: scale(1.1); }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: left; }
+        .full-width { grid-column: span 2; }
+
+        label { display: block; font-size: 13px; font-weight: 600; color: #4a5568; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 12px 15px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 15px; box-sizing: border-box; }
+        
+        .btn-primary { background: var(--cevaz-blue); color: white; border: none; padding: 18px; border-radius: 12px; font-size: 17px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 25px; transition: 0.3s; }
+        .btn-primary:hover { background: #003366; transform: translateY(-2px); }
+
+        .section { display: block; }
+        .hidden { display: none !important; }
+        .timer-pill { background: #ed1c24; color: white; padding: 6px 16px; border-radius: 20px; font-family: monospace; font-weight: bold; margin-bottom: 20px; display: inline-block; font-size: 1.2rem; }
+        
+        .instruction-box { background: #f8fafc; padding: 25px; border-radius: 15px; margin: 20px 0; text-align: left; border-left: 5px solid var(--cevaz-gold); }
+        .instruction-box h4 { margin-top: 0; color: var(--cevaz-blue); }
+        .instruction-box ul { padding-left: 20px; font-size: 14px; color: #4a5568; }
+
+        .options-grid { display: grid; gap: 12px; margin-top: 25px; }
+        .option-card { background: #fff; border: 2px solid #edf2f7; padding: 18px 22px; border-radius: 14px; cursor: pointer; text-align: left; font-weight: 500; transition: 0.2s; font-size: 1rem; width: 100%; box-sizing: border-box; }
+        .option-card:hover { border-color: var(--cevaz-blue); background: #f0f7ff; transform: translateX(5px); }
+        
+        #progress-bar-container { background: #edf2f7; height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 25px; }
+        #progress-bar { background: var(--cevaz-gold); height: 100%; width: 0%; transition: 0.4s; }
+
+        .success-checkmark { font-size: 60px; color: #48bb78; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="main-card">
+    <div class="cintillo"></div>
+    <div class="card-content">
+        <div class="main-title">CEVAZ English Placement Test</div>
+
+        <div class="progress-stepper">
+            <div class="step-dot active" id="dot1">1</div>
+            <div class="step-dot" id="dot2">2</div>
+            <div class="step-dot" id="dot3">3</div>
+            <div class="step-dot" id="dot4">4</div>
+        </div>
+
+        <div id="section-setup" class="section">
+            <div class="form-grid">
+                <div class="full-width">
+                    <label>Full Name</label>
+                    <input type="text" id="studentName" placeholder="e.g., John Doe">
+                </div>
+                <div>
+                    <label>ID Card Number</label>
+                    <input type="text" id="studentID" placeholder="V-12345678">
+                </div>
+<div>
+    <label>Email Address</label>
+    <input type="email" id="studentEmail" placeholder="example@mail.com">
+</div>
+<div>
+    <label>Phone Number</label>
+    <input type="tel" id="studentPhone" placeholder="0412-1234567">
+</div>
+                <div>
+                    <label>Age</label>
+                    <input type="number" id="studentAge" placeholder="Years">
+                </div>
+                <div>
+                    <label>Gender</label>
+                    <select id="studentGender">
+                        <option value="M">Male</option>
+                        <option value="F">Female</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Branch</label>
+                    <select id="studentSede">
+                        <option value="Las Mercedes">Las Mercedes</option>
+                        <option value="La Limpia">La Limpia</option>
+                        <option value="San Francisco">San Francisco</option>
+                        <option value="Digital">CEVAZ Digital</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Frequency</label>
+                    <select id="studentFreq">
+                        <option value="Tuesday & Thursday">Tuesday & Thursday</option>
+                        <option value="Wednesday & Friday">Wednesday & Friday</option>
+                        <option value="Tuesday to Friday">Tuesday to Friday</option>
+                        <option value="Saturdays">Saturdays</option>
+                    </select>
+                </div>
+                <div class="full-width">
+                    <label>Desired Schedule</label>
+                    <select id="studentTime">
+                        <option value="Early Morning">Early Morning</option>
+                        <option value="Late Morning">Late Morning</option>
+                        <option value="Early Afternoon">Early Afternoon</option>
+                        <option value="Late Afternoon">Late Afternoon</option>
+                        <option value="Evening">Evening</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn-primary" onclick="initTest()">PROCEED TO ASSESSMENT</button>
+        </div>
+
+        <div id="section-listening" class="section hidden">
+            <div id="timerDisplay" class="timer-pill">15:00</div>
+            <h2 style="color: var(--cevaz-blue); margin: 0;">Part 1: Listening</h2>
+            
+            <div class="instruction-box">
+                <h4>General Instructions</h4>
+                <p>You will listen to an audio track and answer questions based on the information provided. Please ensure your headphones are connected.</p>
+                <strong>Rules:</strong>
+                <ul>
+                    <li>You have 15 minutes to answer all 40 questions.</li>
+                    <li>The timer starts once you press 'Play'.</li>
+                    <li>The system advances automatically after the last question.</li>
+                </ul>
+            </div>
+
+            <div class="audio-controls" style="background: #f1f5f9; padding: 20px; border-radius: 15px; margin-bottom: 25px;">
+                <button onclick="togglePlay()" id="playPauseBtn" style="font-size: 40px; cursor: pointer; background: none; border: none;">▶️</button>
+                <p id="audioStatusLabel" style="font-weight: bold; color: var(--cevaz-blue); margin-top: 10px;">Click Play to Start</p>
+            </div>
+
+            <div id="listening-quiz-ui" class="hidden">
+                <div id="q-counter" style="color: var(--cevaz-blue); font-weight: bold; font-size: 0.8rem; margin-bottom: 10px;">QUESTION 1 OF 40</div>
+                <div id="progress-bar-container"><div id="progress-bar"></div></div>
+                <h3 id="questionText" style="text-align: left; font-size: 1.1rem;"></h3>
+                <div id="optionsContainer" class="options-grid"></div>
+            </div>
+        </div>
+
+        <div id="section-grammar" class="section hidden">
+            <div id="grammarTimerDisplay" class="timer-pill">15:00</div>
+            <h2 style="color: var(--cevaz-blue);">Part 2: Language Use</h2>
+
+            <div id="grammar-intro">
+                <div class="instruction-box">
+                    <h4>General Instructions</h4>
+                    <p>Read each question carefully and select the best option. Levels 13 and 17 are reserved for conversation assessment.</p>
+                    <strong>Rules:</strong>
+                    <ul>
+                        <li>Total of 108 questions.</li>
+                        <li>Three consecutive errors will terminate the test.</li>
+                    </ul>
+                </div>
+                <button class="btn-primary" onclick="startGrammarQuestions()">START LANGUAGE TEST</button>
+            </div>
+
+            <div id="grammar-test-ui" class="hidden">
+                <div id="grammar-q-counter" style="color: var(--cevaz-blue); font-weight: bold; font-size: 0.8rem; margin-bottom: 10px;">QUESTION 1 OF 108</div>
+                <div id="grammar-progress-container" style="background: #edf2f7; height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 25px;">
+                    <div id="grammar-progress-bar" style="background: var(--cevaz-gold); height: 100%; width: 0%;"></div>
+                </div>
+                <h3 id="grammarQuestionText" style="text-align: left; font-size: 1.1rem;"></h3>
+                <div id="grammarOptionsContainer" class="options-grid"></div>
+                <button onclick="confirmarFinalizacion()" style="margin-top: 20px; padding: 8px 16px; font-size: 12px; background: #718096; color: white; border: none; border-radius: 6px; cursor: pointer;">Finalizar Prueba</button>
+            </div>
+        </div>
+
+        <div id="section-end" class="section hidden">
+            <div class="success-checkmark">✔</div>
+            <h2 style="color: var(--cevaz-blue);">Test Submitted Successfully</h2>
+            <p style="font-size: 1.1rem; color: #4a5568;">Thank you for completing the placement test.</p>
+            <p>Our academic department will review your results shortly.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    emailjs.init("lSI-M89p5cabK2akX");
+    const audio = new Audio("Placement test v2 slow.mp3");
+    
+    let globalData = { 
+        student: {}, 
+        scores: { listening: 0, grammar: 0 }, 
+        mistakes_grammar: [],
+        mistakes_listening: [] // Nueva sección errores listening
+    };
+    let currentIdx = 0;
+    let timerInterval;
+    let timeLeft;
+    let grammarTimerInterval;
+    let grammarTimeLeft;
+    let consecutiveErrors = 0;
+    let isGrammarPart = false;
+
+    // --- BANKS ---
+    const listeningBank = [
+        { lvl: 1, q: "According to the audio, what is Alex's current occupation?", opt: ["Teacher", "Student", "Doctor"], c: 1 },
+        { lvl: 1, q: "How many chairs are there total in the classroom described?", opt: ["Five chairs", "One classroom", "Ten chairs"], c: 2 },
+        { lvl: 2, q: "Based on the conversation, how old is Alex's brother now?", opt: ["10 years old", "20 years old", "12 years old"], c: 1 },
+        { lvl: 2, q: "Which type of food does Alex clearly dislike?", opt: ["Pizza", "Apples", "Bananas"], c: 1 },
+        { lvl: 3, q: "At what specific time does he usually get up in the morning?", opt: ["6:00 AM", "7:00 AM", "7:30 AM"], c: 1 },
+        { lvl: 3, q: "What is the man wearing that makes him stand out?", opt: ["A red hat", "Blue shoes", "A green hat"], c: 0 },
+        { lvl: 4, q: "Where is the speaker intending to go later today?", opt: ["To the supermarket", "To the park", "To work"], c: 1 },
+        { lvl: 4, q: "Where exactly should the person turn right on their journey?", opt: ["After three blocks", "After two blocks", "After the bank "], c: 1 },
+        { lvl: 5, q: "What was the main topic of the documentary they watched?", opt: ["History in Africa", "Animals in Africa", "Documentary about Space"], c: 1 },
+        { lvl: 5, q: "What activity is mentioned as being more fun than watching TV?", opt: ["Fun Reading", "Video games", "Watching TV"], c: 1 },
+        { lvl: 6, q: "What piece of advice is given to help someone arrive on time?", opt: ["Leave now", "Take a taxi on time", "Clean your house Now"], c: 0 },
+        { lvl: 6, q: "When are they planning on traveling to Canada?", opt: ["Next Travel", "Next summer", "Next Sunday"], c: 1 },
+        { lvl: 7, q: "What item did the speaker unfortunately forget to bring?", opt: ["Phone this morning", "Forgot the Wallet", "Keys"], c: 2 },
+        { lvl: 7, q: "How has the city changed significantly since they last visited?", opt: ["Fewer buildings", "More buildings", "More cities"], c: 1 },
+        { lvl: 8, q: "How many times have they visited that restaurant before?", opt: ["Japanese food", "Twice", "Three times"], c: 1 },
+        { lvl: 8, q: "Who is the original author of the book being discussed?", opt: ["An explorer", "A famous book", "Amazon"], c: 0 },
+        { lvl: 9, q: "If they won the lottery, what would they ideally purchase?", opt: ["Travel by the Ocean", "House by ocean", "House in Asia"], c: 1 },
+        { lvl: 9, q: "What should they bring along to the party they are attending?", opt: ["Drinks", "Snacks", "Nothing"], c: 2 },
+        { lvl: 10, q: "How long have they lived in that neighborhood already?", opt: ["2 changes", "5 years", "1 neighborhood"], c: 1 },
+        { lvl: 10, q: "What is the stated reason for wearing masks in the audio?", opt: ["Virus masks", "Air pollution", "Air conditioning"], c: 1 },
+        { lvl: 11, q: "What would become significantly stronger with better education?", opt: ["Education", "Economy", "Schools"], c: 1 },
+        { lvl: 11, q: "According to the audio, memory improvement is achieved by...?", opt: ["Memory", "Eating", "Mental exercises"], c: 2 },
+        { lvl: 12, q: "On what factor does their plan to go to the cinema depend?", opt: ["Weather", "Work in the cinema", "Amount of work"], c: 2 },
+        { lvl: 12, q: "What is the reason given for having less plastic waste now?", opt: ["New laws", "New countries", "New plastic companies"], c: 0 },
+        { lvl: 13, q: "What is their overall opinion regarding technology in daily life?", opt: ["Stressful", "Easier but stressful", "Easier and fast"], c: 1 },
+        { lvl: 13, q: "What specific concern do they have about children's habits?", opt: ["Children study too much", "Phones", "Outdoor play time"], c: 1 },
+        { lvl: 14, q: "Where did they spend most of their summers as a child?", opt: ["City", "Farm", "Granparents's Beach"], c: 1 },
+        { lvl: 14, q: "What is a major requirement for being a successful leader?", opt: ["Strict ideas", "Listening", "Active Reading"], c: 1 },
+        { lvl: 15, q: "Why are they working overtime this week?", opt: ["Money", "Deadline", "New Project"], c: 1 },
+        { lvl: 15, q: "What is the main reason they decided to quit their job?", opt: ["A teaching Career", "Photography", "Moved"], c: 1 },
+        { lvl: 16, q: "What frustrating event occurred at the airport?", opt: ["Flight departed", "Flight late", "Lost at airport"], c: 0 },
+        { lvl: 16, q: "When do they commonly feel nervous?", opt: ["People taking exams", "Public speaking", "Traveling for the first time"], c: 1 },
+        { lvl: 17, q: "What specific advice were they given regarding their career?", opt: ["Stay in your position", "Job in Europe", "A new offer in Asia"], c: 1 },
+        { lvl: 17, q: "What is their main plan or goal for this year?", opt: ["Master's", "Travel/Cultures", "Company"], c: 1 },
+        { lvl: 18, q: "What is an essential requirement for effective communication?", opt: ["Active Writing", "Active listening", "Reading and Listening"], c: 1 },
+        { lvl: 18, q: "What primary concern do they express about AI technology?", opt: ["New Jobs", "Replace jobs", "Expensive Jobs"], c: 1 },
+        { lvl: 19, q: "What critical item do archaeologists need for their work?", opt: ["Money", "Evidence", "Time"], c: 1 },
+        { lvl: 19, q: "Where exactly did the miraculous rescue take place?", opt: ["City Village", "Mountain village", "New Village"], c: 1 },
+        { lvl: 20, q: "When is space travel likely to become a common reality?", opt: ["100 years", "Next decades", "Next century"], c: 1 },
+        { lvl: 20, q: "What is the main subject of the global debate mentioned?", opt: ["Costs", "Gene ethics", "Climate debate"], c: 1 }
+    ];
+
+    const grammarBank = [
+        {q:"What ___ your name?", a:["am","is","are","be"], c:1},
+        {q:"I ___ from Maracaibo.", a:["is","am","are","be"], c:1},
+        {q:"They ___ students.", a:["is","am","are","be"], c:2},
+        {q:"Is he a teacher? No, he ___.", a:["isn't","not","am not","don't"], c:0},
+        {q:"I have ___ apple.", a:["a","an","the","some"], c:1},
+        {q:"These are my ___ books.", a:["sister","sister's","sisters","sister is"], c:1},
+        {q:"Where ___ you live?", a:["do","does","are","is"], c:0},
+        {q:"She ___ coffee every morning.", a:["drink","drinks","drinking","is drink"], c:1},
+        {q:"___ you like English?", a:["Are","Is","Does","Do"], c:3},
+        {q:"What time ___ the class start?", a:["do","does","is","are"], c:1},
+        {q:"Whose car is this? It's ___.", a:["mine","my","me","I"], c:0},
+        {q:"How ___ is this shirt?", a:["many","much","old","often"], c:1},
+        {q:"Can you ___ the piano?", a:["play","plays","playing","to play"], c:0},
+        {q:"We ___ at the park now.", a:["is","am","are","be"], c:2},
+        {q:"What ___ your mother doing?", a:["is","are","do","does"], c:0},
+        {q:"I ___ listen to music at night.", a:["usually","usual","use","am"], c:0},
+        {q:"Look! The birds ___.", a:["fly","are flying","flies","is fly"], c:1},
+        {q:"Is it raining? Yes, it ___.", a:["is","does","rains","do"], c:0},
+        {q:"I ___ a new car last week.", a:["buy","bought","buys","buying"], c:1},
+        {q:"Where ___ you yesterday?", a:["was","were","did","are"], c:1},
+        {q:"She didn't ___ to the party.", a:["go","went","going","goes"], c:0},
+        {q:"They ___ at home last night.", a:["stay","stayed","stays","staying"], c:1},
+        {q:"Did you see Alex? No, I ___.", a:["didn't","don't","wasn't","not"], c:0},
+        {q:"We ___ to the beach in 2022.", a:["go","went","gone","goes"], c:1},
+        {q:"Venezuela is ___ than Ecuador.", a:["big","bigger","more big","the biggest"], c:1},
+        {q:"This is the ___ movie I've seen.", a:["good","better","best","goodest"], c:2},
+        {q:"Math is ___ than History.", a:["difficult","more difficult","difficulter","the most difficult"], c:1},
+        {q:"He is the ___ player in the team.", a:["tall","taller","tallest","more tall"], c:2},
+        {q:"My house is as ___ as yours.", a:["big","bigger","biggest","more big"], c:0},
+        {q:"Your car is ___ expensive than mine.", a:["more","most","very","much"], c:0},
+        {q:"I'm going ___ a pizza tonight.", a:["buy","to buy","buying","bought"], c:1},
+        {q:"I think it ___ rain tomorrow.", a:["will","is going","is","goes"], c:0},
+        {q:"What ___ you going to do?", a:["is","am","are","will"], c:2},
+        {q:"We ___ visit my grandma on Sunday.", a:["will","are going to","going to","shall"], c:1},
+        {q:"I ___ call you later, I promise.", a:["will","am going to","do","am"], c:0},
+        {q:"Are you ___ travel next month?", a:["go to","going to","will","go"], c:1},
+        {q:"Have you ___ to New York?", a:["be","was","been","go"], c:2},
+        {q:"I haven't eaten ___.", a:["already","yet","just","ever"], c:1},
+        {q:"She has ___ finished her homework.", a:["already","yet","ever","never"], c:0},
+        {q:"How long ___ you lived here?", a:["do","have","has","did"], c:1},
+        {q:"He ___ never seen that movie.", a:["have","has","is","did"], c:1},
+        {q:"We have lived here ___ 2010.", a:["for","since","during","ago"], c:1},
+        {q:"You ___ smoke here. It's forbidden.", a:["mustn't","don't have to","should","can"], c:0},
+        {q:"I think you ___ see a doctor.", a:["should","must","can","would"], c:0},
+        {q:"I ___ swim when I was five.", a:["can","could","should","must"], c:1},
+        {q:"You ___ wear a seatbelt.", a:["must","should","may","might"], c:0},
+        {q:"___ I use your phone?", a:["Must","Should","May","Will"], c:2},
+        {q:"He ___ be at home; his car is gone.", a:["can't","mustn't","shouldn't","doesn't"], c:0},
+        {q:"This house ___ built in 1990.", a:["is","was","were","has"], c:1},
+        {q:"Coffee ___ grown in Brazil.", a:["is","are","was","has"], c:0},
+        {q:"The window ___ broken yesterday.", a:["is","was","did","has"], c:1},
+        {q:"Spanish ___ spoken in many countries.", a:["is","are","was","were"], c:0},
+        {q:"The letters ___ sent last week.", a:["was","were","are","have"], c:1},
+        {q:"The cake ___ by my mother.", a:["made","was made","is make","was making"], c:1},
+        {q:"I ___ sleeping when you called.", a:["was","were","am","did"], c:0},
+        {q:"What ___ they doing at 8 PM?", a:["was","were","did","do"], c:1},
+        {q:"I used to ___ in Caracas.", a:["live","lives","living","lived"], c:0},
+        {q:"We ___ playing soccer when it rained.", a:["was","were","did","are"], c:1},
+        {q:"She ___ use to like broccoli.", a:["didn't","doesn't","wasn't","don't"], c:0},
+        {q:"While I ___ cooking, the phone rang.", a:["was","were","am","did"], c:0},
+        {q:"The man ___ lives next door is a doctor.", a:["which","who","whose","where"], c:1},
+        {q:"This is the book ___ I told you about.", a:["who","which","whom","where"], c:1},
+        {q:"That's the girl ___ father is a pilot.", a:["who","which","whose","whom"], c:2},
+        {q:"The city ___ I was born is very hot.", a:["where","which","who","that"], c:0},
+        {q:"I don't like movies ___ are too long.", a:["who","that","whom","whose"], c:1},
+        {q:"The person ___ I met was very nice.", a:["which","whom","whose","where"], c:1},
+        {q:"If I have time, I ___ you.", a:["call","will call","would call","called"], c:1},
+        {q:"If I ___ you, I wouldn't do that.", a:["am","was","were","be"], c:2},
+        {q:"If it rains, we ___ at home.", a:["stay","will stay","would stay","stayed"], c:1},
+        {q:"What would you do if you ___ the lottery?", a:["win","won","will win","wins"], c:1},
+        {q:"I ___ buy a house if I had money.", a:["will","would","shall","did"], c:1},
+        {q:"If she ___ harder, she will pass.", a:["study","studies","studied","will study"], c:1},
+        {q:"I don't mind ___ late.", a:["work","to work","working","worked"], c:2},
+        {q:"I forgot ___ the door.", a:["lock","to lock","locking","locked"], c:1},
+        {q:"He stopped ___ because it was bad.", a:["smoke","to smoke","smoking","smoked"], c:2},
+        {q:"I'm looking forward to ___ you.", a:["see","seeing","to see","seen"], c:1},
+        {q:"They decided ___ a new car.", a:["buy","to buy","buying","bought"], c:1},
+        {q:"She's good ___ playing tennis.", a:["at","in","on","for"], c:0},
+        {q:"She told me that she ___ happy.", a:["is","was","be","has been"], c:1},
+        {q:"He asked me where I ___.", a:["live","lived","living","lives"], c:1},
+        {q:"They said they ___ finished.", a:["have","had","are","did"], c:1},
+        {q:"I told him ___ worry.", a:["not to","to not","don't","no"], c:0},
+        {q:"He said he ___ come the next day.", a:["will","would","shall","can"], c:1},
+        {q:"She asked if I ___ seen the movie.", a:["have","had","did","was"], c:1},
+        {q:"If I ___ harder, I would have passed.", a:["study","studied","had studied","would study"], c:2},
+        {q:"We would have won if he ___ better.", a:["played","had played","would play","plays"], c:1},
+        {q:"If I hadn't gone, I ___ met her.", a:["wouldn't have","won't have","didn't","hadn't"], c:0},
+        {q:"They ___ been late if they had taken a taxi.", a:["wouldn't have","won't have","hadn't","didn't"], c:0},
+        {q:"If you had told me, I ___ helped you.", a:["will have","would have","had","should"], c:1},
+        {q:"Had I known, I ___ come earlier.", a:["would have","will have","had","should"], c:0},
+        {q:"I ___ my hair cut yesterday.", a:["had","was","did","gotten"], c:0},
+        {q:"I'd like to have my car ___.", a:["repair","to repair","repaired","repairing"], c:2},
+        {q:"You shouldn't have ___ that.", a:["do","did","done","doing"], c:2},
+        {q:"He has his house ___ every year.", a:["paint","painted","painting","to paint"], c:1},
+        {q:"I'll get him ___ the truth.", a:["tell","to tell","telling","told"], c:1},
+        {q:"We had the report ___ by a professional.", a:["write","wrote","written","writing"], c:2},
+        {q:"Little ___ I know about her secret.", a:["do","did","I did","doing"], c:1},
+        {q:"It is essential that he ___ on time.", a:["is","be","was","to be"], c:1},
+        {q:"Seldom ___ such a beautiful sight.", a:["I have seen","have I seen","I saw","did I saw"], c:1},
+        {q:"I suggested that she ___ a lawyer.", a:["consult","consults","consulted","to consult"], c:0},
+        {q:"Only by working hard ___ success.", a:["you achieve","can you achieve","you can achieve","do you achieve"], c:1},
+        {q:"Not until much later ___ the truth.", a:["I learned","did I learn","learned I","I did learn"], c:1},
+        {q:"No sooner had I left ___ it started raining.", a:["than","when","then","that"], c:0},
+        {q:"Suppose you ___ the lottery, what would you do?", a:["win","won","had won","winning"], c:1},
+        {q:"I regret ___ him the truth.", a:["tell","to tell","telling","told"], c:2},
+        {q:"Hardly ___ I entered when she left.", a:["had","did","was","have"], c:0},
+        {q:"I'd rather you ___ anyone about this.", a:["don't tell","didn't tell","not tell","won't tell"], c:1},
+        {q:"Try ___ I might, I couldn't open it.", a:["as","if","though","even"], c:0}
+    ];
+
+    // --- LOGIC ---
+    function initTest() {
+    const name = document.getElementById('studentName').value;
+    const id = document.getElementById('studentID').value;
+    const email = document.getElementById('studentEmail').value;
+    const phone = document.getElementById('studentPhone').value;
+
+    if(!name || !id || !email || !phone) {
+        return alert("Please fill in Name, ID, Email, and Phone Number to proceed.");
+    }
+
+    globalData.student = { 
+        name: name, 
+        id: id,
+        email: email,
+        phone: phone,
+        age: document.getElementById('studentAge').value,
+        gender: document.getElementById('studentGender').value, 
+        sede: document.getElementById('studentSede').value,
+        freq: document.getElementById('studentFreq').value, 
+        time: document.getElementById('studentTime').value
+    };
+    
+    document.getElementById('section-setup').classList.add('hidden');
+    document.getElementById('section-listening').classList.remove('hidden');
+    document.getElementById('dot2').classList.add('active');
+}
+
+    function togglePlay() {
+        if(!timerInterval) {
+            startListeningTimer();
+            document.getElementById('listening-quiz-ui').classList.remove('hidden');
+            document.getElementById('audioStatusLabel').innerText = "Audio is playing...";
+            renderListeningQuestion();
+        }
+        if (audio.paused) { audio.play(); document.getElementById('playPauseBtn').innerText = "⏸️"; }
+        else { audio.pause(); document.getElementById('playPauseBtn').innerText = "▶️"; }
+    }
+
+    function startListeningTimer() {
+        timeLeft = 15 * 60;
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            let mins = Math.floor(timeLeft / 60);
+            let secs = timeLeft % 60;
+            document.getElementById('timerDisplay').innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            if (timeLeft <= 0) startGrammarPart();
+        }, 1000);
+    }
+
+    function renderListeningQuestion() {
+        if(currentIdx >= listeningBank.length) {
+            startGrammarPart();
+            return;
+        }
+        const q = listeningBank[currentIdx];
+        document.getElementById('q-counter').innerText = `LISTENING - QUESTION ${currentIdx + 1} OF 40`;
+        document.getElementById('questionText').innerText = q.q;
+        document.getElementById('progress-bar').style.width = ((currentIdx / 40) * 100) + "%";
+        const container = document.getElementById('optionsContainer');
+        container.innerHTML = '';
+        q.opt.forEach((opt, i) => {
+            const btn = document.createElement('div');
+            btn.className = 'option-card';
+            btn.innerText = opt;
+            btn.onclick = () => { 
+                if(i === q.c) {
+                    globalData.scores.listening++;
+                } else {
+                    // Guardamos la pregunta fallida y la respuesta del alumno
+                    globalData.mistakes_listening.push(`Q${currentIdx+1}: ${q.q} / Alumno escribió: ${opt}`);
+                }
+                currentIdx++; 
+                renderListeningQuestion(); 
+            };
+            container.appendChild(btn);
+        });
+    }
+
+    function startGrammarPart() {
+        clearInterval(timerInterval);
+        audio.pause();
+        document.getElementById('section-listening').classList.add('hidden');
+        document.getElementById('section-grammar').classList.remove('hidden');
+        document.getElementById('dot3').classList.add('active');
+        currentIdx = 0; 
+        isGrammarPart = true;
+    }
+
+    function startGrammarQuestions() {
+        document.getElementById('grammar-intro').classList.add('hidden');
+        document.getElementById('grammar-test-ui').classList.remove('hidden');
+        startGrammarTimer();
+        renderGrammarQuestion();
+    }
+
+    function renderGrammarQuestion() {
+        if(currentIdx >= grammarBank.length) {
+            finishTest();
+            return;
+        }
+        const q = grammarBank[currentIdx];
+        document.getElementById('grammar-q-counter').innerText = `LANGUAGE USE - QUESTION ${currentIdx + 1} OF 108`;
+        document.getElementById('grammarQuestionText').innerText = q.q;
+        document.getElementById('grammar-progress-bar').style.width = ((currentIdx / 108) * 100) + "%";
+        const container = document.getElementById('grammarOptionsContainer');
+        container.innerHTML = '';
+        q.a.forEach((opt, i) => {
+            const btn = document.createElement('div');
+            btn.className = 'option-card';
+            btn.innerText = opt;
+            btn.onclick = () => { 
+                if(i === q.c) {
+                    globalData.scores.grammar++;
+                    consecutiveErrors = 0;
+                } else {
+                    consecutiveErrors++;
+                    // Guardamos la pregunta fallida y la respuesta del alumno
+                    globalData.mistakes_grammar.push(`Q${currentIdx+1}: ${q.q} / Alumno escribió: ${opt}`);
+                }
+
+                if(consecutiveErrors >= 5) {
+                    finishTest(); 
+                } else {
+                    currentIdx++;
+                    renderGrammarQuestion();
+                }
+            };
+            container.appendChild(btn);
+        });
+    }
+
+    function startGrammarTimer() {
+        grammarTimeLeft = 15 * 60;
+        grammarTimerInterval = setInterval(() => {
+            grammarTimeLeft--;
+            let mins = Math.floor(grammarTimeLeft / 60);
+            let secs = grammarTimeLeft % 60;
+            document.getElementById('grammarTimerDisplay').innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            if (grammarTimeLeft <= 0) {
+                clearInterval(grammarTimerInterval);
+                finishTest();
+            }
+        }, 1000);
+    }
+
+    function confirmarFinalizacion() {
+        const confirmacion = confirm("¿Está seguro de finalizar la prueba? Las respuestas enviadas hasta ahora serán guardadas.");
+        if (confirmacion) {
+            clearInterval(grammarTimerInterval);
+            finishTest();
+        }
+    }
+
+    async function finishTest() {
+        clearInterval(grammarTimerInterval);
+        // 1. Interfaz visual final
+        document.getElementById('section-grammar').classList.add('hidden');
+        document.getElementById('section-end').classList.remove('hidden');
+        document.getElementById('dot4').classList.add('active');
+
+        // 2. Cálculos base
+        const nivelGrammar = globalData.scores.grammar === 0 ? "1" : Math.min(20, Math.ceil(globalData.scores.grammar / 5.4)).toString();
+        const timestamp = new Date().toLocaleString();
+
+        // 3. Lógica del Baremo para el PDF
+        const scoreL = globalData.scores.listening;
+        let nivelListeningLabel = "";
+
+        if (scoreL <= 2) { nivelListeningLabel = "1 Beginner (A1.1)"; }
+        else if (scoreL <= 5) { nivelListeningLabel = "2 Beginner (A1.2)"; }
+        else if (scoreL <= 8) { nivelListeningLabel = "3 Elementary (A2.1)"; }
+        else if (scoreL <= 11) { nivelListeningLabel = "4 Elementary (A2.2)"; }
+        else if (scoreL <= 14) { nivelListeningLabel = "5 Pre-Intermediate (B1.1)"; }
+        else if (scoreL <= 17) { nivelListeningLabel = "6 Pre-Intermediate (B1.2)"; }
+        else if (scoreL <= 20) { nivelListeningLabel = "7 Intermediate (B1.3)"; }
+        else if (scoreL <= 23) { nivelListeningLabel = "8 Intermediate (B1.4)"; }
+        else if (scoreL <= 25) { nivelListeningLabel = "9 Upper-Intermediate (B2.1)"; }
+        else if (scoreL <= 27) { nivelListeningLabel = "10 Upper-Intermediate (B2.2)"; }
+        else if (scoreL <= 29) { nivelListeningLabel = "11 Upper-Intermediate (B2.3)"; }
+        else if (scoreL <= 31) { nivelListeningLabel = "12 Advanced (C1.1)"; }
+        else if (scoreL <= 33) { nivelListeningLabel = "13 Advanced (C1.2)"; }
+        else if (scoreL <= 35) { nivelListeningLabel = "14 Advanced (C1.3)"; }
+        else if (scoreL <= 37) { nivelListeningLabel = "15 Proficiency (C2.1)"; }
+        else if (scoreL <= 39) { nivelListeningLabel = "16 Proficiency (C2.2)"; }
+        else { nivelListeningLabel = "17 Mastery / Full Placement"; }
+
+        try {
+            // 4. Generación del PDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Estética CEVAZ
+            doc.setFillColor(0, 74, 153); 
+            doc.rect(0, 0, 210, 20, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(16);
+            doc.text("OFFICIAL PLACEMENT TEST REPORT", 105, 13, { align: "center" });
+
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(12);
+            doc.text(`Student: ${globalData.student.name}`, 20, 40);
+            doc.text(`ID Card: ${globalData.student.id}`, 20, 50);
+            doc.text(`Email: ${globalData.student.email}`, 20, 60); 
+            doc.text(`Phone: ${globalData.student.phone}`, 20, 70);
+            doc.text(`Sede: ${globalData.student.sede}`, 20, 80);
+            doc.text(`Frequency: ${globalData.student.freq}`, 20, 90);
+            doc.line(20, 95, 190, 95);
+
+            doc.setFont("helvetica", "bold");
+            doc.text("ACADEMIC RESULTS:", 20, 105);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Grammar Score: ${globalData.scores.grammar} (Level: ${nivelGrammar})`, 20, 115);
+            doc.text(`Listening Score: ${globalData.scores.listening} / 40`, 20, 125);
+            
+            doc.setFont("helvetica", "bold");
+            doc.text(`Suggested Level: ${nivelListeningLabel}`, 20, 135);
+            
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            doc.text(`Test Date: ${timestamp}`, 20, 145);
+
+            // --- SECCIÓN: REPORTE DE ERRORES LISTENING ---
+            if (globalData.mistakes_listening.length > 0) {
+                doc.addPage(); // Agregamos una segunda página
+                
+                // Encabezado de la segunda página
+                doc.setFillColor(0, 74, 153); 
+                doc.rect(0, 0, 210, 20, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(16);
+                doc.text("INCORRECT ANSWERS REPORT (LISTENING)", 105, 13, { align: "center" });
+
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(10);
+                let y = 30; // Posición vertical inicial
+                const lineH = 7; // Altura de línea
+
+                globalData.mistakes_listening.forEach((mistake, index) => {
+                    // Verificamos si nos quedan espacio en la página
+                    if (y > 280) {
+                        doc.addPage();
+                        y = 20; // Reset Y en la nueva página
+                    }
+                    
+                    // SplitText para asegurar que la pregunta no se corte si es muy larga
+                    const splitTitle = doc.splitTextToSize(`${mistake}`, 170);
+                    doc.text(splitTitle, 20, y);
+                    y += (splitTitle.length * lineH);
+                });
+            }
+            // --- FIN SECCIÓN ERRORES LISTENING ---
+
+            // --- SECCIÓN: REPORTE DE ERRORES GRAMMAR ---
+            if (globalData.mistakes_grammar.length > 0) {
+                doc.addPage(); // Agregamos una página (tercera o segunda según listening)
+                
+                // Encabezado de la página de errores grammar
+                doc.setFillColor(0, 74, 153); 
+                doc.rect(0, 0, 210, 20, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(16);
+                doc.text("INCORRECT ANSWERS REPORT (GRAMMAR)", 105, 13, { align: "center" });
+
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(10);
+                let y = 30; // Posición vertical inicial
+                const lineH = 7; // Altura de línea
+
+                globalData.mistakes_grammar.forEach((mistake, index) => {
+                    // Verificamos si nos quedan espacio en la página
+                    if (y > 280) {
+                        doc.addPage();
+                        y = 20; // Reset Y en la nueva página
+                    }
+                    
+                    // SplitText para asegurar que la pregunta no se corte si es muy larga
+                    const splitTitle = doc.splitTextToSize(`${mistake}`, 170);
+                    doc.text(splitTitle, 20, y);
+                    y += (splitTitle.length * lineH);
+                });
+            }
+            // --- FIN SECCIÓN ERRORES GRAMMAR ---
+
+            const pdfBase64 = doc.output('datauristring').split(',')[1];
+
+            // 5. Envío de datos
+            const payload = {
+                fecha: timestamp,
+                nombre: globalData.student.name,
+                cedula: globalData.student.id,
+                email: globalData.student.email,     // Enviar a la hoja
+                telefono: globalData.student.phone,  // Enviar a la hoja
+                sede: globalData.student.sede,
+                frecuencia: globalData.student.freq,
+                score_language: globalData.scores.grammar,
+                nivel_grammar: nivelGrammar,
+                score_listening: globalData.scores.listening,
+                pdfData: pdfBase64,
+                pdfName: `${globalData.student.name}_${globalData.student.id}.pdf`
+            };
+
+            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyMZ1QU5IUCqw48bixVGy1w18ti_mnCWjkjbQXnRmoHTninBXKIxFO-8kat88y89B_0/exec";
+
+            fetch(SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                body: JSON.stringify(payload)
+            }).then(() => {
+                console.log("Enviado con éxito.");
+            }).catch(err => {
+                console.error("Fallo en envío:", err);
+            });
+
+        } catch (error) {
+            console.error("Error en finishTest:", error);
+            alert("Hubo un problema al procesar los resultados. Por favor contacte al administrador.");
+        }
+    }
+</script>
+</body>
+</html>
