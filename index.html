@@ -9,6 +9,7 @@
     <style>
         :root {
             --cevaz-blue: #004a99;
+            --cevaz-red: #990000;
             --cevaz-gold: #f4b400;
             --bg-light: #f4f7f9;
             --text-main: #2d3748;
@@ -93,6 +94,7 @@
         input, select { width: 100%; padding: 12px 15px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 15px; box-sizing: border-box; }
         
         .btn-primary { background: var(--cevaz-blue); color: white; border: none; padding: 18px; border-radius: 12px; font-size: 17px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 25px; transition: 0.3s; }
+         .btn-danger { background: var(--cevaz-red); color: white; border: none; padding: 18px; border-radius: 12px; font-size: 17px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 25px; transition: 0.3s; }
         .btn-primary:hover { background: #003366; transform: translateY(-2px); }
 
         .section { display: block; }
@@ -134,7 +136,7 @@
             50% { transform: scale(1.1); }
             100% { transform: scale(1); }
         }
-        #speakingTextArea:focus { outline: none; border-color: var(--cevaz-blue); }
+        .warning { background: #ff6600 !important; }
     </style>
 </head>
 <body>
@@ -265,55 +267,59 @@
                 </div>
                 <h3 id="grammarQuestionText" style="text-align: left; font-size: 1.1rem;"></h3>
                 <div id="grammarOptionsContainer" class="options-grid"></div>
-                <button onclick="confirmarFinalizacion()" style="margin-top: 20px; padding: 8px 16px; font-size: 12px; background: #718096; color: white; border: none; border-radius: 6px; cursor: pointer;">Finalizar Prueba</button>
+                <button onclick="confirmarFinalizacion()" class="btn-danger" style="margin-top: 10px;">Finalizar Prueba</button>
             </div>
         </div>
 
         <div id="section-speaking" class="section hidden">
-            <div id="speakingTimerDisplay" class="timer-pill">20:00</div>
             <h2 style="color: var(--cevaz-blue);">Part 3: Speaking</h2>
 
-            <div id="speaking-intro">
+            <div id="s_setup">
                 <div class="instruction-box">
                     <h4>General Instructions</h4>
-                    <p>You will answer 20 questions orally. Speak clearly and ensure your microphone is working.</p>
+                    <p>You will answer 20 questions orally. Speak clearly and ensure your microphone is working. A photo will be taken for identification.</p>
                     <strong>Rules:</strong>
                     <ul>
                         <li>You have 20 minutes to answer all 20 questions.</li>
-                        <li>Press the microphone button and speak your answer.</li>
+                        <li>Press the microphone button to start recording your answer.</li>
                         <li>Your speech will be transcribed automatically.</li>
                         <li>You may finish the evaluation early if desired.</li>
                     </ul>
                 </div>
-                <button class="btn-primary" onclick="startSpeakingSection()">START SPEAKING TEST</button>
+                <video id="s_video" autoplay muted playsinline style="width: 100%; border-radius: 10px; border: 2px solid var(--cevaz-blue); transform: scaleX(-1); margin-bottom: 15px;"></video>
+                <button class="btn-primary" onclick="s_initTest()">START SPEAKING TEST</button>
             </div>
 
-            <div id="speaking-test-ui" class="hidden">
-                <div style="gap: 15px; margin-bottom: 15px;">
-                    <video id="v-monitor" autoplay muted playsinline style="width: 350px; border-radius: 10px; border: 2px solid var(--cevaz-blue); transform: scaleX(-1);"></video>
-                    <div style="flex: 1; text-align: left;">
-                        <div id="speaking-q-counter" style="color: var(--cevaz-blue); font-weight: bold; font-size: 0.8rem; margin-bottom: 10px;">QUESTION 1 OF 20</div>
-                        <div id="speaking-progress-container" style="background: #edf2f7; height: 8px; border-radius: 4px; overflow: hidden;">
-                            <div id="speaking-progress-bar" style="background: var(--cevaz-gold); height: 100%; width: 0%;"></div>
-                        </div>
-                    </div>
+            <div id="s_test" class="hidden">
+                <div id="s_timer" class="timer-pill">20:00</div>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 15px;">
+
+                    <video id="s_monitor" autoplay muted playsinline style="width: 150px; border-radius: 10px; border: 2px solid var(--cevaz-blue); transform: scaleX(-1);"></video>
                 </div>
-                
-                <h3 id="speakingQuestionText" style="text-align: left; font-size: 1.1rem; margin: 15px 0;"></h3>
-                
-                <div style="margin: 20px 0;">
-                    <button id="speakingMicBtn" class="btn-mic" onclick="toggleSpeakingMic()">🎤</button>
-                    <p id="speakingStatusMsg" style="font-size: 0.9rem; color: #666; margin-top: 10px;">Press the microphone to respond</p>
+                <div id="s_progress-bar-container" style="background: #edf2f7; height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 10px;">
+                    <div id="s_progress-bar" style="background: var(--cevaz-gold); height: 100%; width: 0%;"></div>
                 </div>
+                <div id="s_progress" style="font-size: 0.9rem; color: #666; margin-bottom: 5px;">Pregunta 1 de 20</div>
+                <H3 id="s_qtext" style="min-height: 60px; display: flex; align-items: center; justify-content: flex-end; text-align: left; color: var(--cevaz-blue); font-weight: bold; font-size: 1.2rem; margin-bottom: 15px;"></h3>
+                <button id="s_micbtn" class="btn-mic" onclick="s_toggleMic()">🎤</button>
+                <p id="s_status" style="font-size: 0.9rem; color: #666; margin-top: 10px;">Toca el micrófono para responder</p>
+                <textarea id="s_textarea" rows="4" readonly style="width: 100%; padding: 12px; border: 1.5px dashed #ccc; border-radius: 10px; background: #f9f9f9; color: #444; box-sizing: border-box; font-family: inherit; margin: 10px 0;"></textarea>
                 
-                <textarea id="speakingTextArea" rows="4" readonly style="width: 100%; padding: 12px; border: 1.5px dashed #ccc; border-radius: 10px; background: #f9f9f9; color: #444; box-sizing: border-box; font-family: inherit; margin: 10px 0;"></textarea>
+                <button class="btn-primary" id="s_nextbtn" onclick="s_saveAndNext()" disabled style="margin-top: 10px;">SIGUIENTE PREGUNTA</button>
                 
-                <button class="btn-primary" id="speakingNextBtn" onclick="saveSpeakingAndNext()" disabled style="margin-top: 10px;">NEXT QUESTION</button>
-                <button onclick="confirmFinishSpeaking()" style="margin-top: 10px; padding: 8px 16px; font-size: 12px; background: #718096; color: white; border: none; border-radius: 6px; cursor: pointer;">FINISH EVALUATION</button>
+                <button  class="btn-danger" onclick="s_finish()" style="margin-top: 10px;">FINALIZAR EVALUACIÓN AQUÍ</button>
+                <div id="s_debug" style="display: none; background: #111; color: #0f0; font-family: monospace; font-size: 11px; text-align: left; padding: 8px; border-radius: 6px; margin-top: 10px; max-height: 120px; overflow-y: auto;"></div>
+            </div>
+
+            <canvas id="s_canvas" class="hidden" width="640" height="480"></canvas>
+
+            <div id="s_report" class="hidden">
+                <h2 style="color: var(--cevaz-blue);">Enviando Resultados...</h2>
+                <p id="s_uploadstatus">⏳ Procesando reporte y foto...</p>
+                <div id="s_summary"></div>
+                <button class="btn-primary" onclick="location.reload()">SALIR</button>
             </div>
         </div>
-        
-        <canvas id="canvasPhoto" class="hidden" width="640" height="480"></canvas>
 
         <div id="section-end" class="section hidden">
             <div class="success-checkmark">✔</div>
@@ -497,39 +503,6 @@
         {q:"Try ___ I might, I couldn't open it.", a:["as","if","though","even"], c:0}
     ];
 
-    const speakingQuestions = [
-        { lvl: 1, q: "What is your full name, where are you from, and what do you do?, Describe your family" },
-        { lvl: 2, q: "Describe your typical morning routine. What time do you wake up and what do you do?" },
-        { lvl: 3, q: "What did you do on your last vacation or birthday? Tell me about it." },
-        { lvl: 4, q: "Tell me about your favorite hobbies. How often do you do them and why do you like them?" },
-        { lvl: 5, q: "Compare your hometown to another city you know. Which one is better to live in and why?" },
-        { lvl: 6, q: "Have you ever traveled to a different country or tried a very unusual food? Tell me about that experience." },
-        { lvl: 7, q: "What is something you used to do when you were a child that you don't do anymore? How has your life changed?" },
-        { lvl: 8, q: "What will you do if you have a lot of free time next weekend? Do you have any special plans?" },
-        { lvl: 9, q: "If you won the lottery tomorrow, what would you do with the money and how would your life change?" },
-        { lvl: 10, q: "How long have you been studying English or working in your current job? What do you enjoy most about it?" },
-        { lvl: 11, q: "The pyramids in Egypt are a great mystery. How could they have been built without modern technology? Discuss what must have been done by the workers." },
-        { lvl: 12, q: "Think about a mistake you made in the past. What would have happened if you had done things differently?" },
-        { lvl: 13, q: "Do you believe that social media brings people closer together or makes them more isolated? Explain your point of view." },
-        { lvl: 14, q: "What are some things you look forward to doing in the next five years, and what do you hope to have achieved by then?" },
-        { lvl: 15, q: "Describe a global issue that you feel strongly about (like climate change or technology). What is being done to solve it, and what more should be done?" },
-        { lvl: 16, q: "If you had chosen a completely different career path or field of study when you were younger, how do you think your life would be different today?" },
-        { lvl: 17, q: "Some people argue that formal education is becoming less relevant in the modern world due to the internet. To what extent do you agree or disagree?" },
-        { lvl: 18, q: "Looking at your life so far, what are some things you wish you had known when you were younger, and why?" },
-        { lvl: 19, q: "It is often said that history repeats itself. Can you think of any current events that mirror the past? How can society avoid making the same mistakes?" },
-        { lvl: 20, q: "If you were responsible for solving a major global crisis, such as economic inequality or an environmental disaster, what policies would you implement and how would you handle the public reaction?" }
-    ];
-
-    let speakingCurrentIdx = 0;
-    let speakingResults = [];
-    let speakingStream = null;
-    let speakingStudentPhoto = "";
-    let speakingMicPressed = false;
-    let speakingRecState = "idle";
-    let speakingTimerInterval = null;
-    let speakingRecognition = null;
-    const SPEAKING_TEST_DURATION = 20 * 60;
-
     // --- LOGIC ---
     function initTest() {
     const name = document.getElementById('studentName').value;
@@ -684,166 +657,16 @@
         }
     }
 
-    function finishTest() {
+    async function finishTest() {
         clearInterval(grammarTimerInterval);
-        document.getElementById('section-grammar').classList.add('hidden');
-        document.getElementById('section-speaking').classList.remove('hidden');
-        document.getElementById('dot4').classList.add('active');
-    }
-
-    // ── SPEAKING TEST ──────────────────────────────────────────
-
-    function buildSpeakingRecognition() {
-        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SR) { alert("Speech recognition not supported. Use Google Chrome."); return null; }
-        if (speakingRecognition) { try { speakingRecognition.abort(); } catch(e) {} }
-        speakingRecognition = new SR();
-        speakingRecognition.lang = "en-US";
-        speakingRecognition.continuous = true;
-        speakingRecognition.interimResults = false;
-
-        speakingRecognition.onstart = () => {
-            speakingRecState = "running";
-            document.getElementById("speakingMicBtn").classList.add("active");
-            document.getElementById("speakingStatusMsg").innerText = "LISTENING...";
-        };
-
-        speakingRecognition.onend = () => {
-            if (speakingRecState === "running") {
-                speakingRecState = "starting";
-                setTimeout(() => {
-                    try { speakingRecognition.start(); } catch(e) {
-                        speakingRecState = "idle";
-                        document.getElementById("speakingMicBtn").classList.remove("active");
-                        document.getElementById("speakingStatusMsg").innerText = "Press the microphone to retry";
-                    }
-                }, 250);
-            } else { speakingRecState = "idle"; }
-        };
-
-        speakingRecognition.onerror = (e) => {
-            if (e.error === "not-allowed" || e.error === "service-not-allowed") {
-                alert("Microphone permission denied. Allow mic access in Chrome settings.");
-                speakingRecState = "idle";
-                document.getElementById("speakingMicBtn").classList.remove("active");
-                document.getElementById("speakingStatusMsg").innerText = "Permission denied";
-            } else if (e.error === "audio-capture") {
-                alert("Cannot access microphone. Check it's not in use by another app.");
-                speakingRecState = "idle";
-                document.getElementById("speakingMicBtn").classList.remove("active");
-                document.getElementById("speakingStatusMsg").innerText = "Microphone not available";
-            }
-        };
-
-        speakingRecognition.onresult = (e) => {
-            for (let i = e.resultIndex; i < e.results.length; ++i) {
-                if (e.results[i].isFinal) {
-                    document.getElementById("speakingTextArea").value += e.results[i][0].transcript + " ";
-                }
-            }
-        };
-
-        return speakingRecognition;
-    }
-
-    function toggleSpeakingMic() {
-        if (speakingRecState === "idle") {
-            buildSpeakingRecognition();
-            speakingRecState = "starting";
-            try {
-                speakingRecognition.start();
-                speakingMicPressed = true;
-                document.getElementById("speakingNextBtn").disabled = false;
-                document.getElementById("speakingStatusMsg").innerText = "Starting...";
-            } catch(err) {
-                speakingRecState = "idle";
-                document.getElementById("speakingStatusMsg").innerText = "Error - try again";
-            }
-        } else if (speakingRecState === "running") {
-            speakingRecState = "stopping";
-            speakingRecognition.stop();
-            document.getElementById("speakingMicBtn").classList.remove("active");
-            document.getElementById("speakingStatusMsg").innerText = "PAUSED";
-        }
-    }
-
-    function startSpeakingSection() {
-        navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-            .then((s) => {
-                speakingStream = s;
-                document.getElementById("v-monitor").srcObject = s;
-                const canvas = document.getElementById("canvasPhoto");
-                canvas.getContext("2d").drawImage(document.getElementById("v-monitor"), 0, 0, canvas.width, canvas.height);
-                speakingStudentPhoto = canvas.toDataURL("image/jpeg").split(",")[1];
-                document.getElementById("speaking-intro").classList.add("hidden");
-                document.getElementById("speaking-test-ui").classList.remove("hidden");
-                startSpeakingTimer();
-                speakingCurrentIdx = 0;
-                speakingResults = [];
-                loadSpeakingStep();
-            })
-            .catch(() => { alert("Camera access denied. Camera is required for the speaking test."); });
-    }
-
-    function startSpeakingTimer() {
-        let t = SPEAKING_TEST_DURATION;
-        document.getElementById("speakingTimerDisplay").innerText = "20:00";
-        speakingTimerInterval = setInterval(() => {
-            t--;
-            const m = Math.floor(t / 60), s = t % 60;
-            document.getElementById("speakingTimerDisplay").innerText = `${m.toString().padStart(2,"0")}:${s.toString().padStart(2,"0")}`;
-            if (t <= 120) document.getElementById("speakingTimerDisplay").style.background = "#ed1c24";
-            if (t <= 0) { clearInterval(speakingTimerInterval); alert("Time's up."); finishSpeakingTest(); }
-        }, 1000);
-    }
-
-    function loadSpeakingStep() {
-        if (speakingRecognition) { try { speakingRecognition.abort(); } catch(e) {} }
-        speakingRecState = "idle";
-        document.getElementById("speakingMicBtn").classList.remove("active");
-        document.getElementById("speakingQuestionText").innerText = speakingQuestions[speakingCurrentIdx].q;
-        document.getElementById("speakingTextArea").value = "";
-        document.getElementById("speakingNextBtn").disabled = true;
-        document.getElementById("speakingStatusMsg").innerText = "Press the microphone to respond";
-        speakingMicPressed = false;
-        document.getElementById("speaking-q-counter").innerText = `SPEAKING - QUESTION ${speakingCurrentIdx + 1} OF 20`;
-        document.getElementById("speaking-progress-bar").style.width = ((speakingCurrentIdx / 20) * 100) + "%";
-    }
-
-    function saveSpeakingAndNext() {
-        speakingResults.push({
-            lvl: speakingQuestions[speakingCurrentIdx].lvl,
-            q: speakingQuestions[speakingCurrentIdx].q,
-            a: document.getElementById("speakingTextArea").value
-        });
-        if (speakingCurrentIdx === speakingQuestions.length - 1) { finishSpeakingTest(); }
-        else { speakingCurrentIdx++; loadSpeakingStep(); }
-    }
-
-    function confirmFinishSpeaking() {
-        if (confirm("Are you sure you want to finish the evaluation? Your responses so far will be saved.")) {
-            finishSpeakingTest();
-        }
-    }
-
-    function finishSpeakingTest() {
-        clearInterval(speakingTimerInterval);
-        const lastAnswer = document.getElementById("speakingTextArea").value;
-        if (lastAnswer && (!speakingResults.length || speakingResults[speakingResults.length - 1].lvl !== speakingQuestions[speakingCurrentIdx].lvl)) {
-            speakingResults.push({ lvl: speakingQuestions[speakingCurrentIdx].lvl, q: speakingQuestions[speakingCurrentIdx].q, a: lastAnswer });
-        }
-        if (speakingStream) speakingStream.getTracks().forEach(t => t.stop());
-        document.getElementById("section-speaking").classList.add("hidden");
-        document.getElementById("section-end").classList.remove("hidden");
-        document.getElementById("dot5").classList.add("active");
-        submitFinalResults();
-    }
-
-    async function submitFinalResults() {
+        // 1. Cálculos base
         const nivelGrammar = globalData.scores.grammar === 0 ? "1" : Math.min(20, Math.ceil(globalData.scores.grammar / 5.4)).toString();
         const timestamp = new Date().toLocaleString();
+
+        // 2. Lógica del Baremo para el PDF
         const scoreL = globalData.scores.listening;
         let nivelListeningLabel = "";
+
         if (scoreL <= 2) { nivelListeningLabel = "1 Beginner (A1.1)"; }
         else if (scoreL <= 5) { nivelListeningLabel = "2 Beginner (A1.2)"; }
         else if (scoreL <= 8) { nivelListeningLabel = "3 Elementary (A2.1)"; }
@@ -863,144 +686,372 @@
         else { nivelListeningLabel = "17 Mastery / Full Placement"; }
 
         try {
+            // 3. Generación del PDF
             const { jsPDF } = window.jspdf;
-
-            // ── PDF 1: Listening & Grammar ────────────────────────────
             const doc = new jsPDF();
-            doc.setFillColor(0, 74, 153);
+            
+            doc.setFillColor(0, 74, 153); 
             doc.rect(0, 0, 210, 20, 'F');
             doc.setTextColor(255, 255, 255);
             doc.setFontSize(16);
             doc.text("OFFICIAL PLACEMENT TEST REPORT", 105, 13, { align: "center" });
+
             doc.setTextColor(0, 0, 0);
             doc.setFontSize(12);
             doc.text(`Student: ${globalData.student.name}`, 20, 40);
             doc.text(`ID Card: ${globalData.student.id}`, 20, 50);
-            doc.text(`Email: ${globalData.student.email}`, 20, 60);
+            doc.text(`Email: ${globalData.student.email}`, 20, 60); 
             doc.text(`Phone: ${globalData.student.phone}`, 20, 70);
             doc.text(`Sede: ${globalData.student.sede}`, 20, 80);
             doc.text(`Frequency: ${globalData.student.freq}`, 20, 90);
             doc.line(20, 95, 190, 95);
+
             doc.setFont("helvetica", "bold");
             doc.text("ACADEMIC RESULTS:", 20, 105);
             doc.setFont("helvetica", "normal");
             doc.text(`Grammar Score: ${globalData.scores.grammar} (Level: ${nivelGrammar})`, 20, 115);
             doc.text(`Listening Score: ${globalData.scores.listening} / 40`, 20, 125);
+            
             doc.setFont("helvetica", "bold");
             doc.text(`Suggested Level: ${nivelListeningLabel}`, 20, 135);
+            
             doc.setFont("helvetica", "normal");
             doc.setFontSize(10);
             doc.text(`Test Date: ${timestamp}`, 20, 145);
 
             if (globalData.mistakes_listening.length > 0) {
                 doc.addPage();
-                doc.setFillColor(0, 74, 153);
+                doc.setFillColor(0, 74, 153); 
                 doc.rect(0, 0, 210, 20, 'F');
                 doc.setTextColor(255, 255, 255);
                 doc.setFontSize(16);
                 doc.text("INCORRECT ANSWERS REPORT (LISTENING)", 105, 13, { align: "center" });
                 doc.setTextColor(0, 0, 0);
                 doc.setFontSize(10);
-                let y = 30; const lh = 7;
-                globalData.mistakes_listening.forEach(m => {
+                let y = 30;
+                const lineH = 7;
+                globalData.mistakes_listening.forEach((mistake) => {
                     if (y > 280) { doc.addPage(); y = 20; }
-                    const sp = doc.splitTextToSize(m, 170);
-                    doc.text(sp, 20, y); y += (sp.length * lh);
+                    const splitTitle = doc.splitTextToSize(mistake, 170);
+                    doc.text(splitTitle, 20, y);
+                    y += (splitTitle.length * lineH);
                 });
             }
 
             if (globalData.mistakes_grammar.length > 0) {
                 doc.addPage();
-                doc.setFillColor(0, 74, 153);
+                doc.setFillColor(0, 74, 153); 
                 doc.rect(0, 0, 210, 20, 'F');
                 doc.setTextColor(255, 255, 255);
                 doc.setFontSize(16);
                 doc.text("INCORRECT ANSWERS REPORT (GRAMMAR)", 105, 13, { align: "center" });
                 doc.setTextColor(0, 0, 0);
                 doc.setFontSize(10);
-                let y = 30; const lh = 7;
-                globalData.mistakes_grammar.forEach(m => {
+                let y = 30;
+                const lineH = 7;
+                globalData.mistakes_grammar.forEach((mistake) => {
                     if (y > 280) { doc.addPage(); y = 20; }
-                    const sp = doc.splitTextToSize(m, 170);
-                    doc.text(sp, 20, y); y += (sp.length * lh);
+                    const splitTitle = doc.splitTextToSize(mistake, 170);
+                    doc.text(splitTitle, 20, y);
+                    y += (splitTitle.length * lineH);
                 });
             }
 
-            const pdf1Base64 = doc.output('datauristring').split(',')[1];
+            const pdfBase64 = doc.output('datauristring').split(',')[1];
 
-            // ── PDF 2: Speaking ──────────────────────────────────────
-            const doc2 = new jsPDF();
-            doc2.setFillColor(0, 74, 153);
-            doc2.rect(0, 0, 210, 20, 'F');
-            doc2.setTextColor(255, 255, 255);
-            doc2.setFontSize(16);
-            doc2.text("SPEAKING TEST REPORT", 105, 13, { align: "center" });
-            doc2.setTextColor(0, 0, 0);
-            doc2.setFontSize(12);
-            doc2.text(`Student: ${globalData.student.name}`, 20, 40);
-            doc2.text(`ID Card: ${globalData.student.id}`, 20, 50);
-            doc2.line(20, 55, 190, 55);
-            const speakingLevel = speakingResults.length > 0 ? speakingResults[speakingResults.length - 1].lvl : 0;
-            doc2.setFont("helvetica", "bold");
-            doc2.text(`Speaking Level: ${speakingLevel}`, 20, 65);
-            doc2.text(`Total Responses: ${speakingResults.length} / 20`, 20, 75);
-            doc2.setFont("helvetica", "normal");
-            doc2.setFontSize(10);
-            doc2.text(`Test Date: ${timestamp}`, 20, 85);
-
-            if (speakingResults.length > 0) {
-                doc2.addPage();
-                doc2.setFillColor(0, 74, 153);
-                doc2.rect(0, 0, 210, 20, 'F');
-                doc2.setTextColor(255, 255, 255);
-                doc2.setFontSize(16);
-                doc2.text("SPEAKING RESPONSES", 105, 13, { align: "center" });
-                doc2.setTextColor(0, 0, 0);
-                doc2.setFontSize(10);
-                let y = 30; const lh = 7;
-                speakingResults.forEach(r => {
-                    if (y > 280) { doc2.addPage(); y = 20; }
-                    doc2.setFont("helvetica", "bold");
-                    doc2.text(`Level ${r.lvl}:`, 20, y); y += lh;
-                    doc2.setFont("helvetica", "normal");
-                    const ql = doc2.splitTextToSize(r.q, 170);
-                    doc2.text(ql, 20, y); y += (ql.length * lh);
-                    const al = doc2.splitTextToSize(`Answer: ${r.a}`, 170);
-                    doc2.text(al, 20, y); y += (al.length * lh) + 3;
-                });
-            }
-
-            const pdf2Base64 = doc2.output('datauristring').split(',')[1];
-
-            // ── Send both PDFs ───────────────────────────────────────
-            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyMZ1QU5IUCqw48bixVGy1w18ti_mnCWjkjbQXnRmoHTninBXKIxFO-8kat88y89B_0/exec";
-
-            fetch(SCRIPT_URL, {
-                method: "POST", mode: "no-cors",
+            // 4. Envío del PDF 1 (Listening + Grammar)
+            fetch("https://script.google.com/macros/s/AKfycbyMZ1QU5IUCqw48bixVGy1w18ti_mnCWjkjbQXnRmoHTninBXKIxFO-8kat88y89B_0/exec", {
+                method: "POST",
+                mode: "no-cors",
                 body: JSON.stringify({
-                    fecha: timestamp, nombre: globalData.student.name, cedula: globalData.student.id,
-                    email: globalData.student.email, telefono: globalData.student.phone,
-                    sede: globalData.student.sede, frecuencia: globalData.student.freq,
-                    score_language: globalData.scores.grammar, nivel_grammar: nivelGrammar,
+                    fecha: timestamp,
+                    nombre: globalData.student.name,
+                    cedula: globalData.student.id,
+                    email: globalData.student.email,
+                    telefono: globalData.student.phone,
+                    sede: globalData.student.sede,
+                    frecuencia: globalData.student.freq,
+                    score_language: globalData.scores.grammar,
+                    nivel_grammar: nivelGrammar,
                     score_listening: globalData.scores.listening,
-                    pdfData: pdf1Base64, pdfName: `${globalData.student.name}_${globalData.student.id}.pdf`
+                    pdfData: pdfBase64,
+                    pdfName: `${globalData.student.name}_${globalData.student.id}.pdf`
                 })
-            }).catch(err => console.error("Error sending PDF 1:", err));
-
-            fetch(SCRIPT_URL, {
-                method: "POST", mode: "no-cors",
-                body: JSON.stringify({
-                    fecha: timestamp, nombre: globalData.student.name, cedula: globalData.student.id,
-                    sede: globalData.student.sede, speakingLevel: speakingLevel,
-                    responses: speakingResults.length,
-                    transcript: speakingResults.map(r => `[Lvl ${r.lvl}] Q: ${r.q}\nA: ${r.a}`).join("\n\n"),
-                    pdfData: pdf2Base64, pdfName: `${globalData.student.name}_${globalData.student.id}_SPEAKING.pdf`
-                })
-            }).catch(err => console.error("Error sending PDF 2:", err));
+            }).then(() => {
+                console.log("PDF 1 enviado con éxito.");
+            }).catch(err => {
+                console.error("Fallo en envío PDF 1:", err);
+            });
 
         } catch (error) {
-            console.error("Error in submitFinalResults:", error);
-            alert("There was a problem processing the results. Please contact the administrator.");
+            console.error("Error generando PDF 1:", error);
+        }
+
+        // 5. Transición a la prueba de Speaking
+        document.getElementById('section-grammar').classList.add('hidden');
+        document.getElementById('section-speaking').classList.remove('hidden');
+        document.getElementById('dot4').classList.add('active');
+        s_setupCamera();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  PARTE 3: SPEAKING (código original del repositorio speaking)
+    // ═══════════════════════════════════════════════════════════════
+
+    const s_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvQyDXCbxYQBRZMFe-XiHYUtQhuJZQqQgUgDGX4WNa6KDBSGXYELrXbVIyq1L4yteO/exec";
+
+    const s_questions = [
+        { lvl: 1, q: "What is your full name, where are you from, and what do you do?, Describe your family" },
+        { lvl: 2, q: "Describe your typical morning routine. What time do you wake up and what do you do?" },
+        { lvl: 3, q: "What did you do on your last vacation or birthday? Tell me about it." },
+        { lvl: 4, q: "Tell me about your favorite hobbies. How often do you do them and why do you like them?" },
+        { lvl: 5, q: "Compare your hometown to another city you know. Which one is better to live in and why?" },
+        { lvl: 6, q: "Have you ever traveled to a different country or tried a very unusual food? Tell me about that experience." },
+        { lvl: 7, q: "What is something you used to do when you were a child that you don't do anymore? How has your life changed?" },
+        { lvl: 8, q: "What will you do if you have a lot of free time next weekend? Do you have any special plans?" },
+        { lvl: 9, q: "If you won the lottery tomorrow, what would you do with the money and how would your life change?" },
+        { lvl: 10, q: "How long have you been studying English or working in your current job? What do you enjoy most about it?" },
+        { lvl: 11, q: "The pyramids in Egypt are a great mystery. How could they have been built without modern technology? Discuss what must have been done by the workers." },
+        { lvl: 12, q: "Think about a mistake you made in the past. What would have happened if you had done things differently?" },
+        { lvl: 13, q: "Do you believe that social media brings people closer together or makes them more isolated? Explain your point of view." },
+        { lvl: 14, q: "What are some things you look forward to doing in the next five years, and what do you hope to have achieved by then?" },
+        { lvl: 15, q: "Describe a global issue that you feel strongly about (like climate change or technology). What is being done to solve it, and what more should be done?" },
+        { lvl: 16, q: "If you had chosen a completely different career path or field of study when you were younger, how do you think your life would be different today?" },
+        { lvl: 17, q: "Some people argue that formal education is becoming less relevant in the modern world due to the internet. To what extent do you agree or disagree?" },
+        { lvl: 18, q: "Looking at your life so far, what are some things you wish you had known when you were younger, and why?" },
+        { lvl: 19, q: "It is often said that history repeats itself. Can you think of any current events that mirror the past? How can society avoid making the same mistakes?" },
+        { lvl: 20, q: "If you were responsible for solving a major global crisis, such as economic inequality or an environmental disaster, what policies would you implement and how would you handle the public reaction?" }
+    ];
+
+    let s_currentIdx = 0, s_results = [], s_stream, s_studentPhoto = "";
+    let s_micWasPressed = false;
+    let s_recState = "idle";
+    let s_timerInterval;
+    const S_TEST_DURATION = 20 * 60;
+
+    function s_dbg(msg) {
+        console.log("[MIC]", msg);
+        const box = document.getElementById("s_debug");
+        if (!box) return;
+        box.innerHTML += msg + "<br>";
+        box.scrollTop = box.scrollHeight;
+    }
+
+    function s_updateTimer() {
+        const timerEl = document.getElementById("s_timer");
+        let timeLeft = timerEl.dataset.remaining;
+        if (timeLeft === undefined) timeLeft = S_TEST_DURATION;
+        timeLeft = parseInt(timeLeft) - 1;
+        timerEl.dataset.remaining = timeLeft;
+        const mins = Math.floor(timeLeft / 60);
+        const secs = timeLeft % 60;
+        timerEl.innerText = `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+        if (timeLeft <= 120) timerEl.classList.add("warning");
+        if (timeLeft <= 0) {
+            clearInterval(s_timerInterval);
+            alert("Tiempo agotado. La prueba finalizará.");
+            s_finish();
+        }
+    }
+
+    const s_SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!s_SpeechRecognitionAPI) {
+        alert("Tu navegador no soporta reconocimiento de voz. Por favor usa Google Chrome.");
+    }
+
+    let s_recognition = null;
+
+    function s_buildRecognition() {
+        if (s_recognition) { try { s_recognition.abort(); } catch(e) {} }
+        s_recognition = new s_SpeechRecognitionAPI();
+        s_recognition.lang = "en-US";
+        s_recognition.continuous = true;
+        s_recognition.interimResults = false;
+
+        s_recognition.onstart = () => {
+            s_dbg("onstart → running");
+            s_recState = "running";
+            document.getElementById("s_micbtn").classList.add("active");
+            document.getElementById("s_status").innerText = "ESCUCHANDO...";
+        };
+
+        s_recognition.onend = () => {
+            s_dbg("onend (recState=" + s_recState + ")");
+            if (s_recState === "running") {
+                s_recState = "starting";
+                setTimeout(() => {
+                    try {
+                        s_dbg("restarting after silence...");
+                        s_recognition.start();
+                    } catch(e) {
+                        s_dbg("restart failed: " + e.message);
+                        s_recState = "idle";
+                        s_setMicUI(false);
+                        document.getElementById("s_status").innerText = "Toca el micrófono para reintentar";
+                    }
+                }, 250);
+            } else { s_recState = "idle"; }
+        };
+
+        s_recognition.onerror = (e) => {
+            s_dbg("onerror: " + e.error);
+            if (e.error === "not-allowed" || e.error === "service-not-allowed") {
+                alert("Permiso de micrófono denegado. Ve a Configuración de Chrome → Privacidad → Micrófonos y permite este sitio.");
+                s_recState = "idle";
+                s_setMicUI(false);
+                document.getElementById("s_status").innerText = "Permiso denegado";
+            } else if (e.error === "audio-capture") {
+                alert("Chrome no puede acceder al micrófono. Verifica que no esté siendo usado por otra aplicación.");
+                s_recState = "idle";
+                s_setMicUI(false);
+                document.getElementById("s_status").innerText = "Micrófono no disponible";
+            }
+        };
+
+        s_recognition.onresult = (e) => {
+            for (let i = e.resultIndex; i < e.results.length; ++i) {
+                if (e.results[i].isFinal) {
+                    document.getElementById("s_textarea").value += e.results[i][0].transcript + " ";
+                }
+            }
+        };
+    }
+
+    function s_setMicUI(active) {
+        const btn = document.getElementById("s_micbtn");
+        if (btn) {
+            if (active) btn.classList.add("active");
+            else btn.classList.remove("active");
+        }
+    }
+
+    function s_toggleMic() {
+        s_dbg("toggleMic called, recState=" + s_recState);
+        if (s_recState === "idle") {
+            s_buildRecognition();
+            s_recState = "starting";
+            try {
+                s_recognition.start();
+                s_micWasPressed = true;
+                document.getElementById("s_nextbtn").disabled = false;
+                document.getElementById("s_status").innerText = "Iniciando...";
+            } catch(err) {
+                s_dbg("start() threw: " + err.message);
+                s_recState = "idle";
+                document.getElementById("s_status").innerText = "Error al iniciar - intenta de nuevo";
+            }
+        } else if (s_recState === "running") {
+            s_recState = "stopping";
+            s_recognition.stop();
+            s_setMicUI(false);
+            document.getElementById("s_status").innerText = "PAUSADO";
+        } else {
+            s_dbg("ignored tap during transition: " + s_recState);
+        }
+    }
+
+    function s_setupCamera() {
+        navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+            .then((s) => {
+                s_stream = s;
+                document.getElementById("s_video").srcObject = s_stream;
+            })
+            .catch((e) => { alert("Acceso a cámara denegado."); });
+
+        const mBtn = document.getElementById("s_micbtn");
+        let justTouched = false;
+        mBtn.addEventListener("touchend", (e) => {
+            e.preventDefault();
+            justTouched = true;
+            s_toggleMic();
+            setTimeout(() => { justTouched = false; }, 500);
+        });
+        mBtn.addEventListener("click", () => {
+            if (justTouched) return;
+            s_toggleMic();
+        });
+    }
+
+    function s_initTest() {
+        const video = document.getElementById("s_video");
+        const canvas = document.getElementById("s_canvas");
+        canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+        s_studentPhoto = canvas.toDataURL("image/jpeg").split(",")[1];
+
+        document.getElementById("s_monitor").srcObject = s_stream;
+        document.getElementById("s_setup").classList.add("hidden");
+        document.getElementById("s_test").classList.remove("hidden");
+        document.getElementById("s_timer").dataset.remaining = S_TEST_DURATION;
+        s_timerInterval = setInterval(s_updateTimer, 1000);
+        s_loadStep();
+    }
+
+    function s_loadStep() {
+        if (s_recognition) { try { s_recognition.abort(); } catch(e) {} }
+        s_recState = "idle";
+        s_setMicUI(false);
+        document.getElementById("s_qtext").innerText = s_questions[s_currentIdx].q;
+        document.getElementById("s_textarea").value = "";
+        document.getElementById("s_nextbtn").disabled = true;
+        document.getElementById("s_status").innerText = "Toca el micrófono para responder";
+        s_micWasPressed = false;
+        document.getElementById("s_progress").innerText = `Pregunta ${s_currentIdx + 1} de 20`;
+        document.getElementById("s_progress-bar").style.width = ((s_currentIdx / 20) * 100) + "%";
+    }
+
+    function s_saveAndNext() {
+        s_results.push({
+            lvl: s_questions[s_currentIdx].lvl,
+            q: s_questions[s_currentIdx].q,
+            a: document.getElementById("s_textarea").value,
+        });
+        if (s_currentIdx === s_questions.length - 1) {
+            s_finish();
+        } else {
+            s_currentIdx++;
+            s_loadStep();
+        }
+    }
+
+    function s_finish() {
+        clearInterval(s_timerInterval);
+        const lastAnswer = document.getElementById("s_textarea").value;
+        if (lastAnswer && (!s_results.length || s_results[s_results.length - 1].lvl !== s_questions[s_currentIdx].lvl)) {
+            s_results.push({
+                lvl: s_questions[s_currentIdx].lvl,
+                q: s_questions[s_currentIdx].q,
+                a: lastAnswer,
+            });
+        }
+        document.getElementById("s_test").classList.add("hidden");
+        document.getElementById("s_report").classList.remove("hidden");
+        if (s_stream) s_stream.getTracks().forEach((t) => t.stop());
+        s_upload();
+    }
+
+    async function s_upload() {
+        const finalLevel = s_results.length > 0 ? s_results[s_results.length - 1].lvl : 0;
+        const payload = {
+            name: globalData.student.name,
+            id: globalData.student.id,
+            sede: globalData.student.sede,
+            fecha: new Date().toLocaleDateString(),
+            level: finalLevel,
+            transcript: s_results.map((r) => `[Lvl ${r.lvl}] ${r.a}`).join("\n\n"),
+            photo: s_studentPhoto,
+        };
+        try {
+            await fetch(s_SCRIPT_URL, {
+                method: "POST",
+                body: JSON.stringify(payload),
+            });
+            document.getElementById("s_uploadstatus").innerText = "✅ ¡Prueba completada!";
+            document.getElementById("s_summary").innerHTML = "Tus respuestas y foto han sido enviadas exitosamente.";
+            document.getElementById("section-speaking").classList.add("hidden");
+            document.getElementById("section-end").classList.remove("hidden");
+            document.getElementById("dot5").classList.add("active");
+        } catch (e) {
+            document.getElementById("s_uploadstatus").innerText = "❌ Error al enviar datos.";
         }
     }
 </script>
