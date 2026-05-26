@@ -659,135 +659,30 @@
 
     async function finishTest() {
         clearInterval(grammarTimerInterval);
-        // 1. Cálculos base
-        const nivelGrammar = globalData.scores.grammar === 0 ? "1" : Math.min(20, Math.ceil(globalData.scores.grammar / 5.4)).toString();
-        const timestamp = new Date().toLocaleString();
+        // Guardar cálculos para el PDF final en s_upload()
+        globalData._nivelGrammar = globalData.scores.grammar === 0 ? "1" : Math.min(20, Math.ceil(globalData.scores.grammar / 5.4)).toString();
+        globalData._timestamp = new Date().toLocaleString();
 
-        // 2. Lógica del Baremo para el PDF
         const scoreL = globalData.scores.listening;
-        let nivelListeningLabel = "";
+        if (scoreL <= 2) { globalData._nivelListeningLabel = "1 Beginner (A1.1)"; }
+        else if (scoreL <= 5) { globalData._nivelListeningLabel = "2 Beginner (A1.2)"; }
+        else if (scoreL <= 8) { globalData._nivelListeningLabel = "3 Elementary (A2.1)"; }
+        else if (scoreL <= 11) { globalData._nivelListeningLabel = "4 Elementary (A2.2)"; }
+        else if (scoreL <= 14) { globalData._nivelListeningLabel = "5 Pre-Intermediate (B1.1)"; }
+        else if (scoreL <= 17) { globalData._nivelListeningLabel = "6 Pre-Intermediate (B1.2)"; }
+        else if (scoreL <= 20) { globalData._nivelListeningLabel = "7 Intermediate (B1.3)"; }
+        else if (scoreL <= 23) { globalData._nivelListeningLabel = "8 Intermediate (B1.4)"; }
+        else if (scoreL <= 25) { globalData._nivelListeningLabel = "9 Upper-Intermediate (B2.1)"; }
+        else if (scoreL <= 27) { globalData._nivelListeningLabel = "10 Upper-Intermediate (B2.2)"; }
+        else if (scoreL <= 29) { globalData._nivelListeningLabel = "11 Upper-Intermediate (B2.3)"; }
+        else if (scoreL <= 31) { globalData._nivelListeningLabel = "12 Advanced (C1.1)"; }
+        else if (scoreL <= 33) { globalData._nivelListeningLabel = "13 Advanced (C1.2)"; }
+        else if (scoreL <= 35) { globalData._nivelListeningLabel = "14 Advanced (C1.3)"; }
+        else if (scoreL <= 37) { globalData._nivelListeningLabel = "15 Proficiency (C2.1)"; }
+        else if (scoreL <= 39) { globalData._nivelListeningLabel = "16 Proficiency (C2.2)"; }
+        else { globalData._nivelListeningLabel = "17 Mastery / Full Placement"; }
 
-        if (scoreL <= 2) { nivelListeningLabel = "1 Beginner (A1.1)"; }
-        else if (scoreL <= 5) { nivelListeningLabel = "2 Beginner (A1.2)"; }
-        else if (scoreL <= 8) { nivelListeningLabel = "3 Elementary (A2.1)"; }
-        else if (scoreL <= 11) { nivelListeningLabel = "4 Elementary (A2.2)"; }
-        else if (scoreL <= 14) { nivelListeningLabel = "5 Pre-Intermediate (B1.1)"; }
-        else if (scoreL <= 17) { nivelListeningLabel = "6 Pre-Intermediate (B1.2)"; }
-        else if (scoreL <= 20) { nivelListeningLabel = "7 Intermediate (B1.3)"; }
-        else if (scoreL <= 23) { nivelListeningLabel = "8 Intermediate (B1.4)"; }
-        else if (scoreL <= 25) { nivelListeningLabel = "9 Upper-Intermediate (B2.1)"; }
-        else if (scoreL <= 27) { nivelListeningLabel = "10 Upper-Intermediate (B2.2)"; }
-        else if (scoreL <= 29) { nivelListeningLabel = "11 Upper-Intermediate (B2.3)"; }
-        else if (scoreL <= 31) { nivelListeningLabel = "12 Advanced (C1.1)"; }
-        else if (scoreL <= 33) { nivelListeningLabel = "13 Advanced (C1.2)"; }
-        else if (scoreL <= 35) { nivelListeningLabel = "14 Advanced (C1.3)"; }
-        else if (scoreL <= 37) { nivelListeningLabel = "15 Proficiency (C2.1)"; }
-        else if (scoreL <= 39) { nivelListeningLabel = "16 Proficiency (C2.2)"; }
-        else { nivelListeningLabel = "17 Mastery / Full Placement"; }
-
-        try {
-            // 3. Generación del PDF
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            doc.setFillColor(0, 74, 153); 
-            doc.rect(0, 0, 210, 20, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(16);
-            doc.text("OFFICIAL PLACEMENT TEST REPORT", 105, 13, { align: "center" });
-
-            doc.setTextColor(0, 0, 0);
-            doc.setFontSize(12);
-            doc.text(`Student: ${globalData.student.name}`, 20, 40);
-            doc.text(`ID Card: ${globalData.student.id}`, 20, 50);
-            doc.text(`Email: ${globalData.student.email}`, 20, 60); 
-            doc.text(`Phone: ${globalData.student.phone}`, 20, 70);
-            doc.text(`Sede: ${globalData.student.sede}`, 20, 80);
-            doc.text(`Frequency: ${globalData.student.freq}`, 20, 90);
-            doc.line(20, 95, 190, 95);
-
-            doc.setFont("helvetica", "bold");
-            doc.text("ACADEMIC RESULTS:", 20, 105);
-            doc.setFont("helvetica", "normal");
-            doc.text(`Grammar Score: ${globalData.scores.grammar} (Level: ${nivelGrammar})`, 20, 115);
-            doc.text(`Listening Score: ${globalData.scores.listening} / 40`, 20, 125);
-            
-            doc.setFont("helvetica", "bold");
-            doc.text(`Suggested Level: ${nivelListeningLabel}`, 20, 135);
-            
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(10);
-            doc.text(`Test Date: ${timestamp}`, 20, 145);
-
-            if (globalData.mistakes_listening.length > 0) {
-                doc.addPage();
-                doc.setFillColor(0, 74, 153); 
-                doc.rect(0, 0, 210, 20, 'F');
-                doc.setTextColor(255, 255, 255);
-                doc.setFontSize(16);
-                doc.text("INCORRECT ANSWERS REPORT (LISTENING)", 105, 13, { align: "center" });
-                doc.setTextColor(0, 0, 0);
-                doc.setFontSize(10);
-                let y = 30;
-                const lineH = 7;
-                globalData.mistakes_listening.forEach((mistake) => {
-                    if (y > 280) { doc.addPage(); y = 20; }
-                    const splitTitle = doc.splitTextToSize(mistake, 170);
-                    doc.text(splitTitle, 20, y);
-                    y += (splitTitle.length * lineH);
-                });
-            }
-
-            if (globalData.mistakes_grammar.length > 0) {
-                doc.addPage();
-                doc.setFillColor(0, 74, 153); 
-                doc.rect(0, 0, 210, 20, 'F');
-                doc.setTextColor(255, 255, 255);
-                doc.setFontSize(16);
-                doc.text("INCORRECT ANSWERS REPORT (GRAMMAR)", 105, 13, { align: "center" });
-                doc.setTextColor(0, 0, 0);
-                doc.setFontSize(10);
-                let y = 30;
-                const lineH = 7;
-                globalData.mistakes_grammar.forEach((mistake) => {
-                    if (y > 280) { doc.addPage(); y = 20; }
-                    const splitTitle = doc.splitTextToSize(mistake, 170);
-                    doc.text(splitTitle, 20, y);
-                    y += (splitTitle.length * lineH);
-                });
-            }
-
-            const pdfBase64 = doc.output('datauristring').split(',')[1];
-
-            // 4. Envío del PDF 1 (Listening + Grammar)
-            fetch("https://script.google.com/macros/s/AKfycbyMZ1QU5IUCqw48bixVGy1w18ti_mnCWjkjbQXnRmoHTninBXKIxFO-8kat88y89B_0/exec", {
-                method: "POST",
-                mode: "no-cors",
-                body: JSON.stringify({
-                    fecha: timestamp,
-                    nombre: globalData.student.name,
-                    cedula: globalData.student.id,
-                    email: globalData.student.email,
-                    telefono: globalData.student.phone,
-                    sede: globalData.student.sede,
-                    frecuencia: globalData.student.freq,
-                    score_language: globalData.scores.grammar,
-                    nivel_grammar: nivelGrammar,
-                    score_listening: globalData.scores.listening,
-                    pdfData: pdfBase64,
-                    pdfName: `${globalData.student.name}_${globalData.student.id}.pdf`
-                })
-            }).then(() => {
-                console.log("PDF 1 enviado con éxito.");
-            }).catch(err => {
-                console.error("Fallo en envío PDF 1:", err);
-            });
-
-        } catch (error) {
-            console.error("Error generando PDF 1:", error);
-        }
-
-        // 5. Transición a la prueba de Speaking
+        // Transición a la prueba de Speaking
         document.getElementById('section-grammar').classList.add('hidden');
         document.getElementById('section-speaking').classList.remove('hidden');
         document.getElementById('dot4').classList.add('active');
@@ -797,8 +692,6 @@
     // ═══════════════════════════════════════════════════════════════
     //  PARTE 3: SPEAKING (código original del repositorio speaking)
     // ═══════════════════════════════════════════════════════════════
-
-    const s_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvQyDXCbxYQBRZMFe-XiHYUtQhuJZQqQgUgDGX4WNa6KDBSGXYELrXbVIyq1L4yteO/exec";
 
     const s_questions = [
         { lvl: 1, q: "What is your full name, where are you from, and what do you do?, Describe your family" },
@@ -1029,31 +922,274 @@
         s_upload();
     }
 
-    async function s_upload() {
-        const finalLevel = s_results.length > 0 ? s_results[s_results.length - 1].lvl : 0;
-        const payload = {
-            name: globalData.student.name,
-            id: globalData.student.id,
-            sede: globalData.student.sede,
-            fecha: new Date().toLocaleDateString(),
-            level: finalLevel,
-            transcript: s_results.map((r) => `[Lvl ${r.lvl}] ${r.a}`).join("\n\n"),
-            photo: s_studentPhoto,
-        };
-        try {
-            await fetch(s_SCRIPT_URL, {
-                method: "POST",
-                body: JSON.stringify(payload),
-            });
-            document.getElementById("s_uploadstatus").innerText = "✅ ¡Prueba completada!";
-            document.getElementById("s_summary").innerHTML = "Tus respuestas y foto han sido enviadas exitosamente.";
-            document.getElementById("section-speaking").classList.add("hidden");
-            document.getElementById("section-end").classList.remove("hidden");
-            document.getElementById("dot5").classList.add("active");
-        } catch (e) {
-            document.getElementById("s_uploadstatus").innerText = "❌ Error al enviar datos.";
-        }
+    function s_getNivelLabel(score) {
+        if (score <= 2) return "1 Beginner (A1.1)";
+        if (score <= 5) return "2 Beginner (A1.2)";
+        if (score <= 8) return "3 Elementary (A2.1)";
+        if (score <= 11) return "4 Elementary (A2.2)";
+        if (score <= 14) return "5 Pre-Intermediate (B1.1)";
+        if (score <= 17) return "6 Pre-Intermediate (B1.2)";
+        if (score <= 20) return "7 Intermediate (B1.3)";
+        if (score <= 23) return "8 Intermediate (B1.4)";
+        if (score <= 25) return "9 Upper-Intermediate (B2.1)";
+        if (score <= 27) return "10 Upper-Intermediate (B2.2)";
+        if (score <= 29) return "11 Upper-Intermediate (B2.3)";
+        if (score <= 31) return "12 Advanced (C1.1)";
+        if (score <= 33) return "13 Advanced (C1.2)";
+        if (score <= 35) return "14 Advanced (C1.3)";
+        if (score <= 37) return "15 Proficiency (C2.1)";
+        if (score <= 39) return "16 Proficiency (C2.2)";
+        return "17 Mastery / Full Placement";
     }
+
+async function s_upload() {
+    const finalLevel = s_results.length > 0 ? s_results[s_results.length - 1].lvl : 0;
+    const nivelGrammar = globalData.scores.grammar === 0 ? "1" : Math.min(20, Math.ceil(globalData.scores.grammar / 5.4)).toString();
+    const timestamp = new Date().toLocaleString();
+    const nivelListeningLabel = s_getNivelLabel(globalData.scores.listening);
+
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // ─── HELPERS ───────────────────────────────────────────────────────────
+
+        function addSolidHeader(d, title) {
+            d.setFillColor(0, 74, 153);
+            d.rect(0, 0, 210, 20, 'F');
+            d.setTextColor(255, 255, 255);
+            d.setFontSize(14);
+            d.setFont("helvetica", "bold");
+            d.text(title, 105, 13, { align: "center" });
+            d.setTextColor(0, 0, 0);
+            d.setFont("helvetica", "normal");
+        }
+
+        // Etiqueta en negrita + valor en normal, en la misma línea
+        function labelValue(d, label, value, x, y) {
+            d.setFont("helvetica", "bold");
+            d.setFontSize(11);
+            const labelWidth = d.getTextWidth(label);
+            d.text(label, x, y);
+            d.setFont("helvetica", "normal");
+            d.text(value, x + labelWidth + 1, y);
+        }
+
+        // Foto con borde azul redondeado
+        function addPhoto(d, x, y, w, h) {
+            if (!s_studentPhoto) return;
+            try {
+                d.addImage(s_studentPhoto, "JPEG", x, y, w, h);
+                d.setDrawColor(0, 74, 153);
+                d.setLineWidth(0.8);
+                d.rect(x, y, w, h);
+                d.setDrawColor(0, 0, 0);
+                d.setLineWidth(0.2);
+            } catch(e) {}
+        }
+
+        // ─── PÁGINA 1: OFFICIAL PLACEMENT TEST REPORT ──────────────────────────
+
+        addSolidHeader(doc, "OFFICIAL PLACEMENT TEST REPORT");
+
+        // Datos del estudiante con etiqueta+valor
+        let y = 38;
+        const lh = 10; // line height
+        labelValue(doc, "Student: ",   globalData.student.name,  20, y); y += lh;
+        labelValue(doc, "ID Card: ",   globalData.student.id,    20, y); y += lh;
+        labelValue(doc, "Email: ",     globalData.student.email, 20, y); y += lh;
+        labelValue(doc, "Phone: ",     globalData.student.phone, 20, y); y += lh;
+        labelValue(doc, "Sede: ",      globalData.student.sede,  20, y); y += lh;
+        labelValue(doc, "Frequency: ", globalData.student.freq,  20, y); y += lh;
+
+        // Línea divisoria
+        doc.setDrawColor(180, 180, 180);
+        doc.setLineWidth(0.4);
+        doc.line(20, y, 190, y);
+        y += 10;
+
+        // Resultados académicos
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
+        doc.text("ACADEMIC RESULTS:", 20, y);
+        y += 9;
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(11);
+        labelValue(doc, "Grammar Score: ", `${globalData.scores.grammar}  (Level: ${nivelGrammar})`, 20, y); y += lh;
+        labelValue(doc, "Listening Score: ", `${globalData.scores.listening} / 40`, 20, y); y += lh;
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        labelValue(doc, "Suggested Level: ", nivelListeningLabel, 20, y); y += lh;
+        labelValue(doc, "Speaking – Nivel alcanzado: ", `${finalLevel}`, 20, y); y += lh;
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(120, 120, 120);
+        doc.text(`Test Date: ${timestamp}`, 20, y);
+        doc.setTextColor(0, 0, 0);
+
+        // ─── PÁGINAS DE ERRORES ────────────────────────────────────────────────
+
+        function addErrorsPage(d, title, mistakes) {
+            if (mistakes.length === 0) return;
+            d.addPage();
+            addSolidHeader(d, title);
+            d.setFontSize(10);
+            d.setFont("helvetica", "normal");
+            let ey = 30;
+            const lineH = 7;
+            mistakes.forEach((mistake) => {
+                if (ey > 280) {
+                    d.addPage();
+                    addSolidHeader(d, title);
+                    d.setFontSize(10);
+                    ey = 30;
+                }
+                const split = d.splitTextToSize(mistake, 170);
+                d.text(split, 20, ey);
+                ey += split.length * lineH;
+            });
+        }
+
+        addErrorsPage(doc, "INCORRECT ANSWERS REPORT (LISTENING)", globalData.mistakes_listening);
+        addErrorsPage(doc, "INCORRECT ANSWERS REPORT (GRAMMAR)",   globalData.mistakes_grammar);
+
+        // ─── PÁGINA DE SPEAKING ────────────────────────────────────────────────
+
+        doc.addPage();
+
+        // Título estilo imagen: texto grande azul con línea debajo
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.setTextColor(0, 74, 153);
+        doc.text("CEVAZ - REPORTE DE UBICACIÓN ORAL", 20, 22);
+        doc.setDrawColor(0, 74, 153);
+        doc.setLineWidth(0.6);
+        doc.line(20, 26, 190, 26);
+        doc.setTextColor(0, 0, 0);
+        doc.setLineWidth(0.2);
+
+        // Foto del estudiante en esta página también (arriba a la derecha)
+        addPhoto(doc, 152, 30, 38, 48);
+
+        // Datos del estudiante (igual que página 1)
+        let sy = 40;
+        doc.setFontSize(11);
+        labelValue(doc, "Estudiante: ", globalData.student.name, 20, sy); sy += 10;
+        labelValue(doc, "Cédula: ",     globalData.student.id,   20, sy); sy += 10;
+        labelValue(doc, "Sede: ",       globalData.student.sede, 20, sy); sy += 10;
+        labelValue(doc, "Fecha: ",      timestamp,               20, sy); sy += 10;
+
+        // Nivel alcanzado en naranja/rojo como en la imagen
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.text("Nivel Alcanzado: ", 20, sy);
+        const nivelLabelW = doc.getTextWidth("Nivel Alcanzado: ");
+        doc.setTextColor(finalLevel === 0 ? 220 : 0, finalLevel === 0 ? 80 : 150, 0);
+        doc.text(finalLevel === 0 ? "PENDIENTE POR EVALUACION" : String(finalLevel), 20 + nivelLabelW, sy);
+        doc.setTextColor(0, 0, 0);
+        sy += 14;
+
+        // Subtítulo "TRANSCRIPCIÓN COMPLETA" en gris claro
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(13);
+        doc.setTextColor(180, 180, 180);
+        doc.text("TRANSCRIPCIÓN COMPLETA", 20, sy);
+        doc.setTextColor(0, 0, 0);
+        sy += 10;
+
+        // Recuadro con borde gris para la transcripción
+        const boxX = 18;
+        const boxY = sy;
+        const boxW = 174;
+        let transcY = sy + 8;
+        const tLineH = 6;
+
+        doc.setFontSize(10);
+
+        function speakingContinuationHeader(d) {
+            d.setFont("helvetica", "bold");
+            d.setFontSize(18);
+            d.setTextColor(0, 74, 153);
+            d.text("CEVAZ - REPORTE DE UBICACIÓN ORAL", 20, 22);
+            d.setDrawColor(0, 74, 153);
+            d.setLineWidth(0.6);
+            d.line(20, 26, 190, 26);
+            d.setTextColor(0, 0, 0);
+            d.setLineWidth(0.2);
+            d.setFont("helvetica", "normal");
+            d.setFontSize(10);
+        }
+
+        s_results.forEach((r) => {
+            // Si se acaba la página, nueva hoja con el mismo estilo
+            if (transcY > 270) {
+                // Cerrar recuadro de la página anterior
+                const prevBoxH = transcY - boxY + 4;
+                doc.setDrawColor(200, 200, 200);
+                doc.setLineWidth(0.4);
+                doc.rect(boxX, boxY, boxW, prevBoxH);
+
+                doc.addPage();
+                speakingContinuationHeader(doc);
+                transcY = 35;
+            }
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(10);
+            const qLines = doc.splitTextToSize(`[Lvl ${r.lvl}]: ${r.q}`, 164);
+            doc.text(qLines, 24, transcY);
+            transcY += qLines.length * tLineH;
+
+            doc.setFont("helvetica", "normal");
+            const answer = r.a || "(sin respuesta)";
+            const aLines = doc.splitTextToSize(answer, 164);
+            doc.text(aLines, 24, transcY);
+            transcY += aLines.length * tLineH + 4;
+        });
+
+        // Dibujar el recuadro gris alrededor de la transcripción
+        const finalBoxH = transcY - boxY + 4;
+        doc.setDrawColor(200, 200, 200);
+        doc.setLineWidth(0.4);
+        doc.rect(boxX, boxY, boxW, finalBoxH);
+
+        // ─── ENVÍO ─────────────────────────────────────────────────────────────
+
+        const pdfBase64 = doc.output('datauristring').split(',')[1];
+
+        await fetch("https://script.google.com/macros/s/AKfycbyMZ1QU5IUCqw48bixVGy1w18ti_mnCWjkjbQXnRmoHTninBXKIxFO-8kat88y89B_0/exec", {
+            method: "POST",
+            mode: "no-cors",
+            body: JSON.stringify({
+                fecha: timestamp,
+                nombre: globalData.student.name,
+                cedula: globalData.student.id,
+                email: globalData.student.email,
+                telefono: globalData.student.phone,
+                sede: globalData.student.sede,
+                frecuencia: globalData.student.freq,
+                score_language: globalData.scores.grammar,
+                nivel_grammar: nivelGrammar,
+                score_listening: globalData.scores.listening,
+                pdfData: pdfBase64,
+                pdfName: `${globalData.student.name}_${globalData.student.id}.pdf`
+            })
+        });
+
+        document.getElementById("s_uploadstatus").innerText = "✅ ¡Prueba completada!";
+        document.getElementById("s_summary").innerHTML = "Tus respuestas y foto han sido enviadas exitosamente.";
+        document.getElementById("section-speaking").classList.add("hidden");
+        document.getElementById("section-end").classList.remove("hidden");
+        document.getElementById("dot5").classList.add("active");
+
+    } catch (e) {
+        console.error("Error generando/enviando PDF:", e);
+        document.getElementById("s_uploadstatus").innerText = "❌ Error al enviar datos.";
+    }
+}
 </script>
 </body>
 </html>
